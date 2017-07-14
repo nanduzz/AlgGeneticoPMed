@@ -7,6 +7,8 @@ package algoritimogenetico;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -35,6 +37,7 @@ public class Main {
         scan.close();
         System.out.println(cromossomo.populacao.length);
         cromossomo.encontraPrimeirasMedianas();
+        cromossomo.iniciaPrimeirasMedianas();
 
     }
 
@@ -47,23 +50,43 @@ public class Main {
             this.populacao = populacao;
             this.medianas = new Gene[nMedianas];
         }
-        
-        private void encontraPrimeirasMedianas(){
-            for(int i = 0; i < this.medianas.length; i++){
-                int rand = (int) Math.round( Math.random() * this.populacao.length );
-                if(!this.populacao[rand].isMediana){
+
+        private void encontraPrimeirasMedianas() {
+            for (int i = 0; i < this.medianas.length; i++) {
+                int rand = (int) Math.round(Math.random() * this.populacao.length);
+                if (!this.populacao[rand].isMediana) {
                     this.populacao[rand].isMediana = true;
                     medianas[i] = this.populacao[rand];
-                }else{
+                } else {
                     i--;
                 }
             }
-            
-            for(int i = 0; i < this.medianas.length; i++){
-                System.out.println(this.medianas[i].toString());
+        }
+
+        private void iniciaPrimeirasMedianas() {
+            int genesAssociados = 0;
+            int genesTotais = populacao.length - medianas.length;
+            for (short i = 0; i < medianas.length; i++) {
+                int j = 0;
+                while (genesAssociados < genesTotais && j < populacao.length ) {
+                    for (j = 0; j < populacao.length; j++) {
+                        if (!populacao[j].possuiMediana && (populacao[j].demanda + medianas[i].capacidadeUsada) < medianas[i].capacidade) {
+                            populacao[j].possuiMediana = true;
+                            medianas[i].genesMediana.add(populacao[j]);
+                            medianas[i].capacidadeUsada += populacao[j].demanda;
+                            genesAssociados++;
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < medianas.length; i++) {
+                System.out.println(medianas[i].capacidadeUsada);
+                for (int j = 0; j < medianas[i].genesMediana.size(); j++) {
+                    System.out.println(medianas[i].genesMediana.get(j).toString());
+                }
             }
         }
-        
 
     }
 
@@ -74,6 +97,9 @@ public class Main {
         private final short capacidade;
         private final short demanda;
         private boolean isMediana;
+        private boolean possuiMediana;
+        private int capacidadeUsada;
+        private List<Gene> genesMediana = new ArrayList<Gene>();
 
         private Gene(int posicaoX, int posicaoY, short capacidade, short demanda) {
             this.posicaoX = posicaoX;
@@ -84,15 +110,15 @@ public class Main {
 
         public double calculaDistancia(Gene gene) {
             return Math.sqrt(Math.pow(Math.abs(this.posicaoX - gene.posicaoX), 2) + Math.pow(Math.abs(this.posicaoY - gene.posicaoY), 2));
-
         }
 
         @Override
         public String toString() {
-            return "posicaoX = " + posicaoX + "\t posicaoY = " + posicaoY + "\t capacidade =" + capacidade + "\t demanda = " + this.demanda;
+            return "posicaoX = " + posicaoX
+                    + "\t posicaoY = " + posicaoY
+                    + "\t capacidade =" + capacidade
+                    + "\t demanda = " + demanda;
         }
-        
-        
 
     }
 
